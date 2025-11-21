@@ -23,11 +23,8 @@ class BallViewModel : ViewModel() {
      */
     fun initBall(fieldWidth: Float, fieldHeight: Float, ballSizePx: Float) {
         if (ball == null) {
-            // TODO: Initialize the ball instance
-            // ball = Ball(...)
-
-            // TODO: Update the StateFlow with the initial position
-            // _ballPosition.value = Offset(ball!!.posX, ball!!.posY)
+            ball = Ball(fieldWidth,fieldHeight, ballSizePx)
+            _ballPosition.value = Offset(ball!!.posX, ball!!.posY)
         }
     }
 
@@ -40,32 +37,28 @@ class BallViewModel : ViewModel() {
 
         if (event.sensor.type == Sensor.TYPE_GRAVITY) {
             if (lastTimestamp != 0L) {
-                // TODO: Calculate the time difference (dT) in seconds
-                // Hint: event.timestamp is in nanoseconds
-                // val NS2S = 1.0f / 1000000000.0f
-                // val dT = ...
+                val NS2S = 1.0f / 1_000_000_000.0f
+                val dT = (event.timestamp - lastTimestamp) * NS2S
 
-                // TODO: Update the ball's position and velocity
-                // Hint: The sensor's x and y-axis are inverted
-                // currentBall.updatePositionAndVelocity(xAcc = ..., yAcc = ..., dT = ...)
+                val accelerationMultiplier = 100f
 
-                // TODO: Update the StateFlow to notify the UI
-                // _ballPosition.update { Offset(currentBall.posX, currentBall.posY) }
+                val xAcc = -event.values[0] * accelerationMultiplier
+                val yAcc = event.values[1] * accelerationMultiplier
+
+                currentBall.updatePositionAndVelocity(xAcc = xAcc, yAcc = yAcc, dT = dT)
+                currentBall.checkBoundaries()
+
+                _ballPosition.update { Offset(currentBall.posX, currentBall.posY) }
             }
 
-            // TODO: Update the lastTimestamp
-            // lastTimestamp = ...
+            lastTimestamp = event.timestamp
         }
     }
 
     fun reset() {
-        // TODO: Reset the ball's state
-        // ball?.reset()
-
-        // TODO: Update the StateFlow with the reset position
-        // ball?.let { ... }
-
-        // TODO: Reset the lastTimestamp
-        // lastTimestamp = 0L
+        val currentBall = ball ?: return
+        currentBall.reset()
+        _ballPosition.value = Offset(currentBall.posX, currentBall.posY)
+        lastTimestamp = 0L
     }
 }
